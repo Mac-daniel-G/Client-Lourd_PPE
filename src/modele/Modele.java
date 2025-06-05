@@ -316,7 +316,7 @@ public class Modele {
 	
 	/***************** Gestion de Boutique ***************************/
 	public static void insertBoutique(Boutique unBoutique) {
-		String requete ="insert into Boutiques values (null, '"+unBoutique.getNom_article()
+		String requete ="insert into boutique values (null, '"+unBoutique.getNom_article()
 		+"', '"+unBoutique.getDescription_article()+"', '"+unBoutique.getPrix_article()
 		+"' , '"+unBoutique.getImage_article()+"' );";
 		executerRequete (requete);
@@ -528,9 +528,10 @@ public class Modele {
 
 	/***************** Gestion des Salles ***************************/
 	public static void insertSalle(Salles unSalle) {
-		String requete ="insert into Boutiques values (null, '"+unSalle.getNom()
+		String requete ="insert into salles values (null, '"+unSalle.getNom()
 		+"', '"+unSalle.getAdresse()+"', '"+unSalle.getVille()
-		+"' , '"+unSalle.getChaine()+"' ,'"+unSalle.getDisponibilites()+"' );";
+		+"' , '"+unSalle.getChaine()+"' ,'"+unSalle.getHoraire_debut()
+		+"' ,'"+unSalle.getHoraire_fin()+"' );";
 		executerRequete (requete);
 	}
 
@@ -548,7 +549,8 @@ public class Modele {
 					desResultats.getString("adresse"),
 					desResultats.getString("ville"),
 					desResultats.getString("chaine"),
-					desResultats.getString("disponibilites")
+					desResultats.getString("horaire_debut"),
+					desResultats.getString("horaire_fin")
 				);
 				lesSalles.add(unSalle);
 			}
@@ -556,6 +558,7 @@ public class Modele {
 			uneConnexion.seDeConnecter();
 		} catch (SQLException exp) {
 			System.out.println("Erreur : " + requete);
+			System.out.println("Erreur : " + exp);
 		}
 		return lesSalles;
 	}
@@ -567,7 +570,8 @@ public class Modele {
                 "adresse LIKE '%" + filtre + "%' OR " +
                 "ville LIKE '%" + filtre + "%' OR " +
                 "chaine LIKE '%" + filtre + "%' OR " +
-                "disponibilites LIKE '%" + filtre + "%';";
+                "horaire_debut LIKE '%" + filtre + "%' OR " +
+                "horaire_fin LIKE '%" + filtre + "%';";
 		try {
 		   uneConnexion.seConnecter();
 		   Statement unStat = uneConnexion.getMaConnexion().createStatement();
@@ -579,7 +583,8 @@ public class Modele {
 		           desResultats.getString("adresse"),
 		           desResultats.getString("ville"),
 		           desResultats.getString("chaine"),
-		           desResultats.getString("disponibilites")
+		           desResultats.getString("horaire_debut"),
+		           desResultats.getString("horaire_fin")
 		       );
 		       lesSalles.add(uneSalle);
 		   }
@@ -587,12 +592,13 @@ public class Modele {
 		   uneConnexion.seDeConnecter();
 		} catch (SQLException exp) {
 		   System.out.println("Erreur : " + requete);
+		   System.out.println("Erreur : " + exp);
 		}
 		return lesSalles;
 	}
 
 	public static void deleteSalle(int id) {
-		String requete = "call deleteSalle("+id+");";
+		String requete = "delete from salles where id ="+id+";" ;
 		executerRequete (requete);
 		
 	}
@@ -603,14 +609,15 @@ public class Modele {
                 "', adresse='" + uneSalle.getAdresse() +
                 "', ville='" + uneSalle.getVille() +
                 "', chaine='" + uneSalle.getChaine() +
-                "', disponibilites='" + uneSalle.getDisponibilites() +
-                "' WHERE id_salle=" + uneSalle.getId() + ";";
+                "', horaire_debut='" + uneSalle.getHoraire_debut() +
+                "', horaire_fin='" + uneSalle.getHoraire_fin() +
+                "' WHERE id =" + uneSalle.getId() + ";";
 		executerRequete(requete);
 		
 	}
 
 	public static Salles selectWhereSalle (int id) {
-		String requete = "SELECT * FROM salle WHERE id_salle=" + id + ";";
+		String requete = "SELECT * FROM salle WHERE id=" + id + ";";
 	    Salles uneSalle = null;
 	    
 	    try {
@@ -620,12 +627,13 @@ public class Modele {
 	        
 	        if (unResultat.next()) {
 	            uneSalle = new Salles(
-	                unResultat.getInt("id_salle"),
+	                unResultat.getInt("id"),
 	                unResultat.getString("nom"),
 	                unResultat.getString("adresse"),
 	                unResultat.getString("ville"),
 	                unResultat.getString("chaine"),
-	                unResultat.getString("disponibilites")
+	                unResultat.getString("horaire_debut"),
+			        unResultat.getString("horaire_fin")
 	            );
 	        }
 	        
@@ -633,6 +641,7 @@ public class Modele {
 	        uneConnexion.seDeConnecter();
 	    } catch (SQLException exp) {
 	        System.out.println("Erreur : " + requete);
+	        System.out.println("Erreur : " + exp);
 	    }
 	    
 	    return uneSalle;
@@ -660,7 +669,9 @@ public class Modele {
 					desResultats.getString("rythme"),
 					desResultats.getString("description"),
 					desResultats.getString("duree"),
-					desResultats.getString("categorie")
+					desResultats.getString("categorie"),
+					desResultats.getInt("salle_id"),
+					desResultats.getInt("coach_id")
 				);
 				lesProgrammes.add(unProgramme);
 			}
@@ -691,7 +702,9 @@ public class Modele {
 					desResultats.getString("rythme"),
 					desResultats.getString("description"),
 					desResultats.getString("duree"),
-					desResultats.getString("categorie")
+					desResultats.getString("categorie"),
+					desResultats.getInt("salle_id"),
+					desResultats.getInt("coach_id")
 				);
 				lesProgrammes.add(unProgramme);
 			}
@@ -734,7 +747,9 @@ public class Modele {
 					unResultat.getString("rythme"),
 					unResultat.getString("description"),
 					unResultat.getString("duree"),
-					unResultat.getString("categorie")
+					unResultat.getString("categorie"),
+					unResultat.getInt("salle_id"),
+					unResultat.getInt("coach_id")
 				);
 			}
 			unStat.close();

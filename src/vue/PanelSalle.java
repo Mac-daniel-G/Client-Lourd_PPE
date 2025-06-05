@@ -1,6 +1,9 @@
 package vue;
 
+import controlleur.Coach;
+import controlleur.Controlleur;
 import controlleur.Salles;
+import controlleur.Tableau;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -8,139 +11,156 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 
-public class PanelSalle extends JPanel implements ActionListener {
+public class PanelSalle extends PanelPrincipal implements ActionListener {
+	private static final long serialVersionUID = 1L;
+	private JPanel panelForm = new JPanel();
+    private JTextField txtNom = new JTextField();
+    private JTextField txtAdresse = new JTextField();
+    private JTextField txtVille = new JTextField();
+    private JTextField txtChaine = new JTextField();
+    private JTextField txtHoraire_debut = new JTextField();
+    private JTextField txtHoraire_fin = new JTextField();
 
-    private JTable tableSalles;
-    private DefaultTableModel model;
-    private JTextField txtNom, txtAdresse, txtVille, txtChaine, txtDisponibilites;
-    private JButton btValider, btSupprimer, btAnnuler;
+    private JButton btAnnuler = new JButton("Annuler");
+    private JButton btValider = new JButton("Valider");
+    private JButton btSupprimer = new JButton("Supprimer");
 
-    private ArrayList<Salles> salles;
-    private int selectedIndex = -1;
+    private JTable tableSalle;
+    private Tableau tableauSalle;
+
+    private JPanel panelFiltre = new JPanel();
+    private JTextField txtFiltre = new JTextField();
+    private JButton btFiltrer = new JButton("Filtrer");
 
     public PanelSalle() {
-        setLayout(new BorderLayout());
+    	super("Gestion des Coachs");
 
-        // --- TABLE ---
-        model = new DefaultTableModel(new String[]{"Nom", "Adresse", "Ville", "Chaîne", "Disponibilités"}, 0);
-        tableSalles = new JTable(model);
-        tableSalles.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tableSalles.addMouseListener(new MouseAdapter() {
+        this.panelForm.setBackground(Color.blue);
+        this.panelForm.setBounds(60, 50, 300, 300);
+        this.panelForm.setLayout(new GridLayout(7, 2));
+
+        this.panelForm.add(new JLabel("Nom :"));
+        this.panelForm.add(this.txtNom);
+        this.panelForm.add(new JLabel("Adresse :"));
+        this.panelForm.add(this.txtAdresse);
+        this.panelForm.add(new JLabel("Ville :"));
+        this.panelForm.add(this.txtVille);
+        this.panelForm.add(new JLabel("Chaine :"));
+        this.panelForm.add(this.txtChaine);
+        this.panelForm.add(new JLabel("Horaire_debut :"));
+        this.panelForm.add(this.txtHoraire_debut);
+        this.panelForm.add(new JLabel("Horaire_fin :"));
+        this.panelForm.add(this.txtHoraire_fin);
+        this.panelForm.add(this.btAnnuler);
+        this.panelForm.add(this.btValider);
+        this.add(this.panelForm);
+
+        this.btAnnuler.addActionListener(this);
+        this.btValider.addActionListener(this);
+
+        String entetes[] = { "ID Salle", "Nom", "Adresse", "Ville", "Chaine", "Horaire_debut", "Horaire_fin"};
+        this.tableauSalle = new Tableau(this.obtenirDonnees(""), entetes);
+        this.tableSalle = new JTable(tableauSalle);
+        JScrollPane uneScroll = new JScrollPane(this.tableSalle);
+        uneScroll.setBounds(400, 80, 600, 340);
+        this.add(uneScroll);
+
+        this.btSupprimer.setBounds(50, 420, 200, 40);
+        this.add(this.btSupprimer);
+        this.btSupprimer.setBackground(Color.red);
+        this.btSupprimer.setVisible(false);
+        this.btSupprimer.addActionListener(this);
+
+        this.tableSalle.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-                selectedIndex = tableSalles.getSelectedRow();
-                if (selectedIndex != -1) {
-                    Salles s = salles.get(selectedIndex);
-                    txtNom.setText(s.getNom());
-                    txtAdresse.setText(s.getAdresse());
-                    txtVille.setText(s.getVille());
-                    txtChaine.setText(s.getChaine());
-                    txtDisponibilites.setText(s.getDisponibilites());
+                if (e.getClickCount() >= 1) {
+                    int numLigne = tableSalle.getSelectedRow();
+                    txtNom.setText(tableauSalle.getValueAt(numLigne, 1).toString());
+                    txtAdresse.setText(tableauSalle.getValueAt(numLigne, 2).toString());
+                    txtVille.setText(tableauSalle.getValueAt(numLigne, 3).toString());
+                    txtChaine.setText(tableauSalle.getValueAt(numLigne, 4).toString());
+                    txtHoraire_debut.setText(tableauSalle.getValueAt(numLigne, 5).toString());
+                    txtHoraire_fin.setText(tableauSalle.getValueAt(numLigne, 6).toString());
                     btValider.setText("Modifier");
+                    btSupprimer.setVisible(true);
                 }
             }
+            public void mousePressed(MouseEvent e) {}
+            public void mouseReleased(MouseEvent e) {}
+            public void mouseEntered(MouseEvent e) {}
+            public void mouseExited(MouseEvent e) {}
         });
 
-        add(new JScrollPane(tableSalles), BorderLayout.CENTER);
+        this.panelFiltre.setBackground(Color.orange);
+        this.panelFiltre.setLayout(new GridLayout(1, 3));
+        this.panelFiltre.setBounds(420, 50, 500, 20);
+        this.panelFiltre.add(new JLabel("Filtrer par :"));
+        this.panelFiltre.add(this.txtFiltre);
+        this.panelFiltre.add(this.btFiltrer);
+        this.add(this.panelFiltre);
+        this.btFiltrer.addActionListener(this);
+    }
+    public Object[][] obtenirDonnees(String filtre) {
+        ArrayList<Salles> lesSalles;
+        if (filtre.equals("")) {
+            lesSalles = Controlleur.selectAllSalles();
+        } else {
+            lesSalles = Controlleur.selectLikeSalles(filtre);
+        }
 
-        // --- FORMULAIRE ---
-        JPanel formPanel = new JPanel(new GridLayout(6, 2, 10, 10));
-        txtNom = new JTextField();
-        txtAdresse = new JTextField();
-        txtVille = new JTextField();
-        txtChaine = new JTextField();
-        txtDisponibilites = new JTextField();
-
-        formPanel.add(new JLabel("Nom de la salle :"));
-        formPanel.add(txtNom);
-        formPanel.add(new JLabel("Adresse :"));
-        formPanel.add(txtAdresse);
-        formPanel.add(new JLabel("Ville :"));
-        formPanel.add(txtVille);
-        formPanel.add(new JLabel("Chaîne :"));
-        formPanel.add(txtChaine);
-        formPanel.add(new JLabel("Disponibilités :"));
-        formPanel.add(txtDisponibilites);
-
-        add(formPanel, BorderLayout.NORTH);
-
-        // --- BOUTONS ---
-        JPanel btnPanel = new JPanel();
-        btValider = new JButton("Valider");
-        btSupprimer = new JButton("Supprimer");
-        btAnnuler = new JButton("Annuler");
-
-        btValider.addActionListener(this);
-        btSupprimer.addActionListener(this);
-        btAnnuler.addActionListener(this);
-
-        btnPanel.add(btValider);
-        btnPanel.add(btSupprimer);
-        btnPanel.add(btAnnuler);
-
-        add(btnPanel, BorderLayout.SOUTH);
-
-        salles = new ArrayList<>();
+        Object[][] matrice = new Object[lesSalles.size()][7];
+        int i = 0;
+        for (Salles unSalle : lesSalles) {
+        	matrice[i][0] = unSalle.getId();
+            matrice[i][1] = unSalle.getNom();
+            matrice[i][2] = unSalle.getAdresse();
+            matrice[i][3] = unSalle.getVille();
+            matrice[i][4] = unSalle.getChaine();
+            matrice[i][5] = unSalle.getHoraire_debut();
+            matrice[i][6] = unSalle.getHoraire_fin();
+            i++;
+        }
+        return matrice;
     }
 
     public void actionPerformed(ActionEvent e) {
-        Object source = e.getSource();
-
-        if (source == btValider) {
-            String nom = txtNom.getText().trim();
-            String adresse = txtAdresse.getText().trim();
-            String ville = txtVille.getText().trim();
-            String chaine = txtChaine.getText().trim();
-            String disponibilites = txtDisponibilites.getText().trim();
-
-            if (nom.isEmpty() || adresse.isEmpty() || ville.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Veuillez remplir les champs obligatoires (nom, adresse, ville).");
-                return;
-            }
-
-            if (btValider.getText().equals("Valider")) {
-                Salles s = new Salles(nom, adresse, ville, chaine, disponibilites);
-                salles.add(s);
-                model.addRow(new Object[]{nom, adresse, ville, chaine, disponibilites});
-            } else {
-                Salles s = salles.get(selectedIndex);
-                s.setNom(nom);
-                s.setAdresse(adresse);
-                s.setVille(ville);
-                s.setChaine(chaine);
-                s.setDisponibilites(disponibilites);
-
-                model.setValueAt(nom, selectedIndex, 0);
-                model.setValueAt(adresse, selectedIndex, 1);
-                model.setValueAt(ville, selectedIndex, 2);
-                model.setValueAt(chaine, selectedIndex, 3);
-                model.setValueAt(disponibilites, selectedIndex, 4);
-
-                btValider.setText("Valider");
-            }
-
-            resetForm();
-
-        } else if (source == btSupprimer) {
-            if (selectedIndex != -1) {
-                salles.remove(selectedIndex);
-                model.removeRow(selectedIndex);
-                selectedIndex = -1;
-                resetForm();
-                btValider.setText("Valider");
-            }
-        } else if (source == btAnnuler) {
-            resetForm();
+        if (e.getSource() == btAnnuler) {
+            txtNom.setText("");
+            txtAdresse.setText("");
+            txtVille.setText("");
+            txtChaine.setText("");
+            txtHoraire_debut.setText("");
+            txtHoraire_fin.setText("");
             btValider.setText("Valider");
-            tableSalles.clearSelection();
-            selectedIndex = -1;
+            btSupprimer.setVisible(false);
+        }
+        else if (e.getSource() == btValider && btValider.getText().equals("Modifier")) {
+            int id = Integer.parseInt(tableauSalle.getValueAt(tableSalle.getSelectedRow(), 0).toString());
+            Coach unSalle = new Coach(id, txtNom.getText(), txtAdresse.getText(), txtVille.getText(), txtChaine.getText(), txtHoraire_debut.getText(), txtHoraire_fin.getText());
+            Controlleur.updateCoach(unSalle);
+            tableauSalle.setDonnees(this.obtenirDonnees(""));
+            JOptionPane.showMessageDialog(this, "Modification réussie du Salle.");
+            btAnnuler.doClick();
+        }
+        else if (e.getSource() == btValider) {
+            Coach unSalle = new Coach(txtNom.getText(), txtAdresse.getText(), txtVille.getText(), txtChaine.getText(), txtHoraire_debut.getText(), txtHoraire_fin.getText());
+            Controlleur.insertCoach(unSalle);
+            tableauSalle.setDonnees(this.obtenirDonnees(""));
+            JOptionPane.showMessageDialog(this, "Insertion réussie du Salle.");
+            btAnnuler.doClick();
+        }
+        else if (e.getSource() == btSupprimer) {
+        	System.out.println(tableauSalle.getValueAt(tableSalle.getSelectedRow(), 0));
+            int id = Integer.parseInt(tableauSalle.getValueAt(tableSalle.getSelectedRow(), 0)+"");
+            System.out.println(id);
+            Controlleur.deleteCoach(id);
+            tableauSalle.setDonnees(this.obtenirDonnees(""));
+            JOptionPane.showMessageDialog(this, "Suppression réussie du Salle.");
+            btAnnuler.doClick();
+        }
+        else if (e.getSource() == btFiltrer) {
+            tableauSalle.setDonnees(this.obtenirDonnees(txtFiltre.getText()));
         }
     }
-
-    private void resetForm() {
-        txtNom.setText("");
-        txtAdresse.setText("");
-        txtVille.setText("");
-        txtChaine.setText("");
-        txtDisponibilites.setText("");
-    }
 }
+

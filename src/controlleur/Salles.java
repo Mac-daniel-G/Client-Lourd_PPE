@@ -6,28 +6,32 @@ public class Salles {
     private String adresse;
     private String ville;
     private String chaine;
-    private String disponibilites;
+    private String horaire_debut;
+    private String horaire_fin;
 
     // Constructeur complet avec id
-    public Salles(int id, String nom, String adresse, String ville, String chaine, String disponibilites) {
+    public Salles(int id, String nom, String adresse, String ville, String chaine, String horaire_debut, String horaire_fin) {
         super();
         this.id = id;
         this.nom = nom;
         this.adresse = adresse;
         this.ville = ville;
         this.chaine = chaine;
-        this.disponibilites = disponibilites;
+        this.horaire_debut = horaire_debut;
+        this.horaire_fin = horaire_fin;
+
     }
 
     // Constructeur sans id
-    public Salles(String nom, String adresse, String ville, String chaine, String disponibilites) {
+    public Salles(String nom, String adresse, String ville, String chaine, String horaire_debut, String horaire_fin) {
         super();
         this.id = 0; // L'id sera généré automatiquement en base de données
         this.nom = nom;
         this.adresse = adresse;
         this.ville = ville;
         this.chaine = chaine;
-        this.disponibilites = disponibilites;
+        this.horaire_debut = horaire_debut;
+        this.horaire_fin = horaire_fin;
     }
 
     // Getters et Setters
@@ -71,11 +75,19 @@ public class Salles {
         this.chaine = chaine;
     }
 
-    public String getDisponibilites() {
-        return disponibilites;
+    public String getHoraire_debut() {
+        return horaire_debut;
     }
 
-    public void setDisponibilites(String disponibilites) {
-        this.disponibilites = disponibilites;
+    public void setHoraire_debut(String horaire_debut) {
+        this.horaire_debut = horaire_debut;
+    }
+    
+    public String getHoraire_fin() {
+        return horaire_fin;
+    }
+
+    public void setHoraire_fin(String horaire_fin) {
+        this.horaire_fin = horaire_fin;
     }
 }

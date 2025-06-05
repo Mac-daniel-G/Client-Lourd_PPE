@@ -138,13 +138,5 @@ public class Sportif {
         this.objectif = objectif;
     }
 
-	public String getSpecialite() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
-	public String getIdCoach() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }
